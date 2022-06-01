@@ -25,7 +25,8 @@ public class Pacient {
     private String neighborhood;
     @Column(name = "zip_code")
     private Integer zipCode;
-    @OneToMany(mappedBy = "pacients")
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pacient_id", referencedColumnName = "id")
     private List<EmergencyRecord> emergencyRecords;
 
 }

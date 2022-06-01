@@ -1,9 +1,9 @@
 package com.curame.urgencias.registro.repository;
 
 import com.curame.urgencias.registro.models.entity.EmergencyRecord;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-@RepositoryRestResource(path = "emergency-records")
-public interface EmergencyRecordDao extends PagingAndSortingRepository<EmergencyRecord,Long> {
+@Repository
+public interface EmergencyRecordDao extends CrudRepository<EmergencyRecord,Long> {
 }
