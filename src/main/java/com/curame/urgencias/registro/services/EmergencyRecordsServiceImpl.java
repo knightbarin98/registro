@@ -1,6 +1,7 @@
 package com.curame.urgencias.registro.services;
 
-import com.curame.urgencias.registro.models.entity.EmergencyRecord;
+import com.curame.urgencias.registro.models.entity.Er;
+import com.curame.urgencias.registro.models.entity.Pacient;
 import com.curame.urgencias.registro.repository.EmergencyRecordDao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,48 +16,71 @@ public class EmergencyRecordsServiceImpl implements IEmergencyRecordsService{
     @Autowired
     private EmergencyRecordDao repository;
 
+    @Autowired
+    private IPacientsService pacientsService;
+
     @Override
-    public List<EmergencyRecord> getEmergencyRecords() {
+    public List<Er> getEmergencyRecords() {
         log.info("obtener objetos: {}", this);
-        List<EmergencyRecord> emergencyRecords = new ArrayList<>();
-        repository.findAll().forEach(emergencyRecord -> emergencyRecords.add(emergencyRecord));
-        return emergencyRecords;
+        List<Er> ers = new ArrayList<>();
+        repository.findAll().forEach(emergencyRecord -> {
+            setPacientEntity(emergencyRecord, emergencyRecord.getPacientId());
+            ers.add(emergencyRecord);
+        });
+        return ers;
     }
 
     @Override
-    public EmergencyRecord getEmergencyRecord(Long id) {
+    public Er getEmergencyRecord(Long id) {
         log.info("obtener objetos id:" + id + " {}", this);
-        EmergencyRecord emergencyRecord = repository.findById(id).orElse(null);
-        return emergencyRecord;
+        Er er = repository.findById(id).orElse(null);
+        setPacientEntity(er,er.getPacientId());
+        return er;
     }
 
     @Override
-    public EmergencyRecord create(EmergencyRecord emergencyRecord) {
-        log.info("create objeto {} , {}", emergencyRecord, this);
-        EmergencyRecord newEmergencyRecord = repository.save(emergencyRecord);
-        return newEmergencyRecord;
+    public Er create(Er er) {
+        log.info("create objeto {} , {}", er, this);
+        Er newEr = repository.save(er);
+        setPacientEntity(newEr,newEr.getPacientId());
+        return newEr;
     }
 
     @Override
-    public EmergencyRecord update(EmergencyRecord emergencyRecord, Long id) {
-        EmergencyRecord emergencyRecorddb = repository.findById(id).orElse(null);
+    public Er update(Er er, Long id) {
+        Er emergencyRecorddb = repository.findById(id).orElse(null);
         if (emergencyRecorddb == null) {
             return null;
         }
 
-        emergencyRecorddb.setAllergies(emergencyRecord.getAllergies());
-        emergencyRecorddb.setAllergiesDescription(emergencyRecord.getAllergiesDescription());
-        emergencyRecorddb.setNss(emergencyRecord.getNss());
-        emergencyRecorddb.setInsuranceCode(emergencyRecord.getInsuranceCode());
-        emergencyRecorddb.setInsuranceCompany(emergencyRecord.getInsuranceCompany());
-        emergencyRecorddb.setDiagnosticReview(emergencyRecord.getDiagnosticReview());
+        emergencyRecorddb.setAllergies(er.getAllergies());
+        emergencyRecorddb.setAllergiesDescription(er.getAllergiesDescription());
+        emergencyRecorddb.setNss(er.getNss());
+        emergencyRecorddb.setInsuranceCode(er.getInsuranceCode());
+        emergencyRecorddb.setInsuranceCompany(er.getInsuranceCompany());
+        emergencyRecorddb.setDiagnosticReview(er.getDiagnosticReview());
 
-        return repository.save(emergencyRecorddb);
+        Er updatedEr = repository.save(emergencyRecorddb);
+        setPacientEntity(updatedEr, updatedEr.getPacientId());
+        return updatedEr;
     }
 
     @Override
     public void delete(Long id) {
         log.info("delete objeto id: " + id + " {}", this);
         repository.deleteById(id);
+    }
+
+    private void setPacientEntity(Er emergencyRecord, Long id){
+        Pacient p = pacientsService.getPacient(emergencyRecord.getPacientId());
+        emergencyRecord.setPacient(new Pacient(
+                p.getId(),
+                p.getFirstname(),
+                p.getLastname(),
+                p.getAddress(),
+                p.getNeighborhood(),
+                p.getZipCode(),
+                null
+        ));
     }
 }
